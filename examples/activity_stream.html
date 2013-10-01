@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <title>Activity Streams using Pusher</title>
+    
+    <link rel="stylesheet/less" type="text/css" href="lib/twitter-bootstrap/lib/bootstrap.less">
+    <script src="lib/less/less-1.1.5.min.js"></script>
+    
+    <link href="styles.css" rel="stylesheet" />
+    <link href="../src/activity-streams.css" rel="stylesheet" />
+    
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+    <script src="http://js.pusher.com/1.11/pusher.min.js"></script>
+    <script src="../src/PusherActivityStreamer.js"></script>
+    <script src="js/ExampleActivities.js"></script>    
+    <script>
+      $(function() {
+        
+        var pusher = new Pusher('23e909f6c1d71ec2df0f');
+		
+		pusher.connection.bind( 'error', function( err ) 
+		{ 
+			if( err.data.code === 4004 ) {
+			alert('>>> detected limit error');
+			}
+		});
+		
+		pusher.connection.bind('state_change', function(states) {
+			// states = {previous: 'oldState', current: 'newState'}
+		alert("Pusher's current state is " + states.current);
+		});
+		
+        var activityChannel = pusher.subscribe('site-activity');
+        var activityMonitor = new PusherActivityStreamer(activityChannel, "#activity_stream_example");
+        
+        var examples = new ExampleActivities(activityMonitor, pusher);
+        
+        $("#sendTest").click(function(){
+          activityMonitor.sendActivity('test-event',$("#email").val());
+        });
+      });
+    </script>
+  </head>
+  <body>
+
+    <div class="container">
+
+      <div class="topbar">
+        <div class="fill">
+          <div class="container">
+            <a class="brand" href="/">Activity Streams using Pusher</a>
+          </div>
+        </div>
+      </div>
+
+      <section class="activity-stream">
+        
+        <div class="page-header">
+          <h1>Activity Stream </h1>
+        </div>
+        
+        <div id="gravatar" class="alert-message block-message info">
+          <p><strong>Why don't you provide your email address</strong> so your Gravatar and Gravatar profile can be looked up and used in the Activity Stream</p>
+          <div class="alert-actions">
+            <input class="xlarge" id="email" name="email" size="30" type="text" value="Email [optional]" />
+          </div>
+        </div>
+        
+        <div class="row show-grid">
+          
+          <div class="span4">
+            <h2>Send a test event</h2>
+            <p>
+              Why not try sending a test event by clicking button below.
+            </p>
+            <p><button id="sendTest" class="btn info">Send Test</button></p>
+          </div>
+          <div class="span7">
+            
+            <ul id="activity_stream_example" class="activity-stream no-actions"></ul>
+            
+          </div>
+          
+        </div>
+        
+      </section>
+
+
+      <footer>
+        <p></p>
+      </footer>
+
+    </div> <!-- /container -->
+  </body>
+</html>
